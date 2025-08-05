@@ -22,8 +22,8 @@ google-api-python-client==2.109.0
 google-auth-httplib2==0.2.0
 
 # === Config Management ===
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic==1.10.12
+pydantic-settings==0.2.1
 python-dotenv==1.0.0
 
 # === Database ===
