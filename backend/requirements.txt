@@ -23,7 +23,7 @@ google-auth-httplib2==0.2.0
 
 # === Config Management ===
 pydantic==1.10.12
-pydantic-settings==0.2.1
+pydantic-settings==0.2.5
 python-dotenv==1.0.0
 
 # === Database ===
