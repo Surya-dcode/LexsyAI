@@ -1,7 +1,6 @@
 # backend/config.py
 import os
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings
+from pydantic import BaseSettings
 from functools import lru_cache
 from typing import List
 
