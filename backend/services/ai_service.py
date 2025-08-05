@@ -1,43 +1,70 @@
 # backend/services/ai_service.py
 
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
-from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA
 import os
-
-CHROMA_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chroma")
+import openai
+from chromadb import PersistentClient
 from config import get_settings
+
 settings = get_settings()
+CHROMA_DIR = settings.chroma_persist_dir
 OPENAI_API_KEY = settings.openai_api_key
 
-embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+# Set OpenAI API key
+openai.api_key = OPENAI_API_KEY
 
 def ask_question(client_id: int, question: str):
-    vector_path = os.path.join(CHROMA_DIR, f"client_{client_id}")
-    if not os.path.exists(vector_path):
-        raise ValueError(f"No vector store found for client {client_id}")
+    # Get ChromaDB client
+    chroma_client = PersistentClient(path=os.path.join(CHROMA_DIR, f"client_{client_id}"))
+    
+    try:
+        collection = chroma_client.get_collection(name="default")
+    except:
+        raise ValueError(f"No documents found for client {client_id}")
 
-    vectordb = Chroma(persist_directory=vector_path, embedding_function=embedding_model)
-    retriever = vectordb.as_retriever(search_kwargs={"k": 5})
-
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=retriever,
-        return_source_documents=True
+    # Search for relevant documents
+    results = collection.query(
+        query_texts=[question],
+        n_results=5
     )
+    
+    if not results['documents'] or not results['documents'][0]:
+        return {"answer": "No relevant documents found.", "sources": []}
+    
+    # Combine retrieved documents
+    context = "\n\n".join(results['documents'][0])
+    
+    # Create prompt
+    prompt = f"""Based on the following context, answer the question:
 
-    result = qa({"query": question})
-    answer = result["result"]
-    sources = []
+Context:
+{context}
 
-    for doc in result["source_documents"]:
-        metadata = doc.metadata
-        if metadata.get("source_type") == "email":
-            sources.append({"type": "email", "subject": metadata.get("subject")})
-        else:
-            sources.append({"type": "document", "filename": metadata.get("filename")})
+Question: {question}
 
-    return {"answer": answer, "sources": sources}
+Answer:"""
+
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful legal assistant. Answer questions based on the provided context."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0
+        )
+        
+        answer = response.choices[0].message.content
+        
+        # Extract sources from metadata
+        sources = []
+        if results['metadatas'] and results['metadatas'][0]:
+            for metadata in results['metadatas'][0]:
+                if metadata.get('source_type') == 'email':
+                    sources.append({"type": "email", "subject": metadata.get('subject', 'Unknown')})
+                else:
+                    sources.append({"type": "document", "filename": metadata.get('filename', 'Unknown')})
+        
+        return {"answer": answer, "sources": sources}
+        
+    except Exception as e:
+        raise Exception(f"OpenAI API error: {str(e)}")
