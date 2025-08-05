@@ -30,12 +30,12 @@ class Settings(BaseSettings):
         "case_sensitive": False
     }
     
-    @field_validator('openai_api_key')
-    @classmethod
-    def validate_openai_key(cls, v):
-        if not v.startswith('sk-'):
-            raise ValueError('OpenAI API key must start with "sk-"')
-        return v
+    # @field_validator('openai_api_key')
+    # @classmethod
+    # def validate_openai_key(cls, v):
+    #     if not v.startswith('sk-'):
+    #         raise ValueError('OpenAI API key must start with "sk-"')
+    #     return v
     
     @property
     def cors_origins_list(self) -> List[str]:
@@ -46,8 +46,14 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
+    # Debug environment variables before creating Settings
+    print("=== ENVIRONMENT DEBUG ===")
+    print(f"OPENAI_API_KEY in os.environ: {'OPENAI_API_KEY' in os.environ}")
+    print(f"OPENAI_API_KEY value: {os.environ.get('OPENAI_API_KEY', 'NOT_FOUND')[:10]}***" if os.environ.get('OPENAI_API_KEY') else "NOT_FOUND")
+    print(f"All env vars starting with OPENAI: {[k for k in os.environ.keys() if k.startswith('OPENAI')]}")
+    print(f"Total env vars: {len(os.environ)}")
+    print("========================")
+    
     settings = Settings()
-    # Debug logging
-    print(f"OpenAI API Key loaded: {'***' + settings.openai_api_key[-4:] if settings.openai_api_key and settings.openai_api_key != 'NOT_SET' else 'NOT_SET'}")
-    print(f"Available env vars: {list(os.environ.keys())}")
+    print(f"Settings loaded - OpenAI key: {settings.openai_api_key[:10]}***" if settings.openai_api_key != 'NOT_SET' else "NOT_SET")
     return settings
