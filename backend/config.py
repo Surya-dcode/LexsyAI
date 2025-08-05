@@ -1,13 +1,13 @@
 # backend/config.py
 import os
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 from functools import lru_cache
 from typing import List
 
 class Settings(BaseSettings):
     # Required settings
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
+    openai_api_key: str = Field(default="NOT_SET", env="OPENAI_API_KEY")
     
     # Database settings
     database_url: str = Field(default="sqlite:///./lexsy.db", env="DATABASE_URL")
@@ -30,6 +30,13 @@ class Settings(BaseSettings):
         "case_sensitive": False
     }
     
+    @field_validator('openai_api_key')
+    @classmethod
+    def validate_openai_key(cls, v):
+        if not v.startswith('sk-'):
+            raise ValueError('OpenAI API key must start with "sk-"')
+        return v
+    
     @property
     def cors_origins_list(self) -> List[str]:
         """Convert CORS origins string to list"""
@@ -39,4 +46,8 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
-    return Settings()
+    settings = Settings()
+    # Debug logging
+    print(f"OpenAI API Key loaded: {'***' + settings.openai_api_key[-4:] if settings.openai_api_key and settings.openai_api_key != 'NOT_SET' else 'NOT_SET'}")
+    print(f"Available env vars: {list(os.environ.keys())}")
+    return settings
