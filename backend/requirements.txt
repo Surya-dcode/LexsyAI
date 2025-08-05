@@ -1,6 +1,6 @@
 # === Core Web Framework ===
 fastapi==0.104.1
-uvicorn[standard]==0.24.0
+uvicorn==0.24.0
 
 # === Document Parsing ===
 PyPDF2==3.0.1
