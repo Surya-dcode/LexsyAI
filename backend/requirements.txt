@@ -25,7 +25,7 @@ google-auth-httplib2==0.2.0
 pydantic==1.10.12
 pydantic-settings==2.0.3 
 python-dotenv==1.0.0
-PyYAML==5.4.1
+PyYAML>=6.0
 
 # === DB & HTTP ===
 sqlalchemy==2.0.23
