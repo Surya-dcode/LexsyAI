@@ -11,8 +11,8 @@ aiofiles==23.2.1
 # === LangChain + OpenAI ===
 openai==1.6.1
 chromadb==0.4.15
-langchain==0.0.350
-langchain-community==0.0.10
+langchain==0.1.0
+langchain-community==0.0.12
 langchain-openai==0.0.2
 
 # === Gmail + OAuth ===
@@ -22,10 +22,10 @@ google-api-python-client==2.109.0
 google-auth-httplib2==0.2.0
 
 # === Config Management ===
-pydantic>=1.10.0,<2.0.0
-pydantic-settings>=0.2.0,<1.0.0 
+pydantic==2.5.0
+pydantic-settings==2.1.0
 python-dotenv==1.0.0
-PyYAML>=5.4.1,<6.0.0
+PyYAML==6.0.1
 
 # === DB & HTTP ===
 sqlalchemy==2.0.23
