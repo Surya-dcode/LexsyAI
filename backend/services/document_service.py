@@ -4,10 +4,8 @@ import os
 from fastapi import UploadFile
 from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
-from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
-from uuid import uuid4
 import tempfile
 from config import get_settings
 
@@ -26,20 +24,21 @@ def process_document_upload(client_id: int, file: UploadFile):
         tmp.write(file.file.read())
         tmp_path = tmp.name
 
-    if ext == "pdf":
-        reader = PdfReader(tmp_path)
-        content = "\n".join(page.extract_text() or "" for page in reader.pages)
-    elif ext == "docx":
-        doc = DocxDocument(tmp_path)
-        content = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
-    elif ext == "txt":
-        with open(tmp_path, "r", encoding="utf-8") as f:
-            content = f.read()
-    else:
+    try:
+        if ext == "pdf":
+            reader = PdfReader(tmp_path)
+            content = "\n".join(page.extract_text() or "" for page in reader.pages)
+        elif ext == "docx":
+            doc = DocxDocument(tmp_path)
+            content = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+        elif ext == "txt":
+            with open(tmp_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        else:
+            raise ValueError("Unsupported file type")
+    finally:
         os.unlink(tmp_path)
-        raise ValueError("Unsupported file type")
 
-    os.unlink(tmp_path)
     if not content.strip():
         raise ValueError("Uploaded file is empty or could not be parsed")
 
@@ -47,12 +46,11 @@ def process_document_upload(client_id: int, file: UploadFile):
     os.makedirs(vector_path, exist_ok=True)
 
     metadata = {"filename": file.filename, "source_type": "document"}
-    documents = [{"page_content": content, "metadata": metadata}]
 
     vectordb = Chroma(persist_directory=vector_path, embedding_function=embedding_model)
     vectordb.add_texts(
-        texts=[doc["page_content"] for doc in documents],
-        metadatas=[doc["metadata"] for doc in documents]
+        texts=[content],
+        metadatas=[metadata]
     )
 
     return {"message": f"Uploaded and embedded {file.filename}"}
