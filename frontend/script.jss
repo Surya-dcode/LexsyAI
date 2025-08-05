@@ -1,9 +1,9 @@
 // frontend/script.js
 
-// Configuration - UPDATE THIS FOR PRODUCTION
+// Configuration - Auto-detect environment
 const API_BASE = window.location.hostname === 'localhost' 
   ? 'http://localhost:8000' 
-  : 'https://your-railway-app.railway.app';  // UPDATE WITH YOUR RAILWAY URL
+  : `https://${window.location.hostname}`;  // Use same domain as frontend
 
 // DOM Elements
 const clientSelect = document.getElementById('client-select');
