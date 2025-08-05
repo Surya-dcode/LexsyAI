@@ -1,0 +1,33 @@
+# === Core Web Framework ===
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# === Document Parsing ===
+PyPDF2==3.0.1
+python-docx==1.1.0
+python-multipart==0.0.6
+aiofiles==23.2.1
+
+# === LangChain + OpenAI ===
+openai==1.3.7
+chromadb==0.4.15
+langchain==0.0.350
+langchain-community==0.0.10
+langchain-openai==0.0.2
+
+# === Google Gmail API & OAuth ===
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+google-api-python-client==2.109.0
+google-auth-httplib2==0.2.0
+
+# === Config Management ===
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# === Database ===
+sqlalchemy==2.0.23
+
+# === HTTP Requests ===
+requests==2.31.0
