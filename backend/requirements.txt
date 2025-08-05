@@ -14,7 +14,7 @@ chromadb==0.4.15
 langchain==0.0.350
 langchain-community==0.0.10
 langchain-openai==0.0.2
-PyYAML==5.4.1
+PyYAML==5.3.1
 
 # === Google Gmail API & OAuth ===
 google-auth==2.25.2
