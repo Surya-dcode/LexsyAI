@@ -7,7 +7,7 @@ from typing import List
 
 class Settings(BaseSettings):
     # Required settings
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
+    openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
     
     # Database settings
     database_url: str = Field(default="sqlite:///./lexsy.db", env="DATABASE_URL")
