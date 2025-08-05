@@ -4,17 +4,8 @@ import os
 from fastapi import UploadFile
 from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
 import tempfile
-from config import get_settings
-
-# Get settings from config
-settings = get_settings()
-CHROMA_DIR = settings.chroma_persist_dir
-OPENAI_API_KEY = settings.openai_api_key
-
-embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+from services.vector_service import add_text_to_vectorstore
 
 def process_document_upload(client_id: int, file: UploadFile):
     ext = file.filename.split(".")[-1].lower()
@@ -42,15 +33,7 @@ def process_document_upload(client_id: int, file: UploadFile):
     if not content.strip():
         raise ValueError("Uploaded file is empty or could not be parsed")
 
-    vector_path = os.path.join(CHROMA_DIR, f"client_{client_id}")
-    os.makedirs(vector_path, exist_ok=True)
-
     metadata = {"filename": file.filename, "source_type": "document"}
-
-    vectordb = Chroma(persist_directory=vector_path, embedding_function=embedding_model)
-    vectordb.add_texts(
-        texts=[content],
-        metadatas=[metadata]
-    )
+    add_text_to_vectorstore(client_id, content, metadata)
 
     return {"message": f"Uploaded and embedded {file.filename}"}
